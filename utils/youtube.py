@@ -23,26 +23,28 @@ def get_credentials():
         else:
             # Start a new OAuth flow with your client secrets file
             flow = InstalledAppFlow.from_client_secrets_file(
-                '/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/client_secret.json', SCOPES
+                'client_secret.json', SCOPES
             )
             creds = flow.run_local_server(port=8080)
         
         # Save the credentials for next time
         with open('token.json', 'w') as token_file:
             token_file.write(creds.to_json())
-    
     return creds
 
 
 def get_youtube_service():
     creds = get_credentials()
-    youtube = build("youtube", "v3", credentials=creds)
+    youtube = build("youtube", "v3", credentials=creds, cache_discovery=False)
     return youtube
 
 def upload_video_to_youtube(video_path, title, description, tags, youtube_service=None):
     """
     Uploads a video to YouTube using the given youtube_service.
     """
+    if youtube_service is None:
+        youtube_service = get_youtube_service()
+    
     body = {
         "snippet": {
             "title": title,
@@ -51,13 +53,13 @@ def upload_video_to_youtube(video_path, title, description, tags, youtube_servic
             # 'categoryId': '22',  # optional, e.g. '22' = People & Blogs
         },
         "status": {
-            "privacyStatus": "private",  # or 'unlisted' or 'public'
+            "privacyStatus": "unlisted",  # or 'unlisted' or 'public'
         }
     }
     
     media = MediaFileUpload(video_path, chunksize=-1, resumable=True)
     
-    youtube_service = get_youtube_service() if youtube_service is None else youtube_service
+    #youtube_service = get_youtube_service() if youtube_service is None else youtube_service
     request = youtube_service.videos().insert(
         part="snippet,status",
         body=body,

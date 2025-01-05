@@ -2,7 +2,6 @@ import whisper
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 import logging
 from urllib.parse import urlparse, parse_qs
-#from config import timestamps, WHISPER_MODEL, VOSK_MODEL, MODELS_DIRECTORY
 import wave
 import json
 import vosk
@@ -83,7 +82,7 @@ def extract_audio(video_path: str, output_dir: str = "output") -> str:
     except ffmpeg.Error as e:
         logging.error(f"FFmpeg failed to extract audio: {e.stderr.decode()}")
         # Raise error and interrupt the process.
-        raise ValueError("FFmpeg failed to extract audio.")
+        raise ValueError(f"FFmpeg failed to extract audio. {e.stderr.decode()}")
 
 
 
@@ -111,7 +110,7 @@ def transcribe_audio_whisper(audio_path: str, model_name: str = None) -> list:
         logging.error(f"Whisper transcription failed: {e}")
         return []
 
-def transcribe_audio_vosk(audio_path: str, model_name: str = None) -> dict:
+def transcribe_audio_vosk(audio_path: str, model_name: str = None) -> list[dict]:
     """
     Transcribe audio using Vosk and return subtitle-ready segments.
     """
@@ -166,7 +165,7 @@ def transcribe_audio_vosk(audio_path: str, model_name: str = None) -> dict:
     logging.info(f"Vosk transcription completed for {audio_path}")
     return segments
 
-def transcribe_audio_assemblyai(audio_path: str) -> dict:
+def transcribe_audio_assemblyai(audio_path: str) -> list[dict]:
     """
     Transcribe audio using AssemblyAI API.
     """
@@ -182,13 +181,6 @@ def transcribe_audio_assemblyai(audio_path: str) -> dict:
             logging.error(f"AssemblyAI transcription failed: {transcript.error}")
             return []
         segments = []
-        # for utterance in transcript.utterances:
-        #    segments.append({
-        #             "start": utterance.start,
-        #             "end": utterance.end,
-        #             "text": utterance.text
-        #         })
-        # return segments
         for word in transcript.words:
             segments.append({
                     "start": word.start,
@@ -231,13 +223,3 @@ def get_transcript(downloaded_path, video_url = None, transcriber = "whisper", m
             transcript = transcribe_audio_whisper(audio_path, model_name=model)
     
     return transcript
-    #     transcribe_function = TRANSCRIBER_FUNCTIONS.get(transcriber)
-    #     if transcribe_function is None:
-    #         transcribe_function = transcribe_audio_whisper
-    #         transcriber = "whisper"
-    #         logging.info("Invalid transcriber specified. Attempting to use Whisper instead.")
-    #     logging.info(f"Transcribing audio with {transcriber}...")
-    #     transcript = transcribe_function(audio_path)
-    #     #logging.info(f"{transcriber.upper()} transcript: %s", transcript)
-    #     logging.info(f"Transcription successful" if transcript else "Transcription failed.")
-    # return transcript

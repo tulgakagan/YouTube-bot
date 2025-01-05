@@ -1,8 +1,10 @@
+__pycache__
+.DS_Store
+.env
+utils/uploader.py
 *.mp4
-utils/token.json
-# Ignore specific files in the utils directory
-
-
-# Example: Ignore all `.log` files in the utils directory
+token.json
+client_secret.json
+utils/footage*
 utils/models/*
 output/*
