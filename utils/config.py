@@ -1,6 +1,6 @@
 # Modify this config file before running the main.py file.
 
-TRANSCRIBER = "assemblyai"  # whisper, vosk, assemblyai
+TRANSCRIBER = "vosk"  # whisper, vosk, assemblyai
 
 PREFERRED_MODELS = {
     "whisper": "large-v3-turbo",
@@ -13,7 +13,7 @@ MODELS = {
     "assemblyai": [None]
 }
 VOSK_DIRECTORY = "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/utils/models"
-ASSEMBLYAI_API_KEY = "PLACEHOLDER_KEY" # Add your AssemblyAI API key here if you are using AssemblyAI transcriber
+ASSEMBLYAI_API_KEY = None # Add your AssemblyAI API key here if you are using AssemblyAI transcriber
 
 brainrot_footage = {
     "subway_surfers": {
