@@ -90,7 +90,7 @@ You’ll be prompted for Google OAuth the first time you run it. Once complete, 
 
 ## Configuration
 
-Edit 'utils/config.py' to customize:
+Edit `utils/config.py` to customize:
 
 - `TRANSCRIBER`: Set to `whisper`, `vosk`, or `assemblyai`.
 - `PREFERRED_MODELS`: A dictionary mapping transcribers to model names.
