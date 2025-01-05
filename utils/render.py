@@ -1,12 +1,12 @@
 from moviepy import VideoFileClip, CompositeVideoClip, vfx, TextClip
 import numpy as np
 import logging
-import config
+import utils.config as config
 from utils.downloaders import download_video
 from time import sleep
-import tempfile
+import os
 from utils.youtube import upload_video_to_youtube
-import os #If you wish to download locally
+#import tempfile #If you wish to download locally
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -161,15 +161,14 @@ def prepare_and_upload_shorts(youtube_service, clip: VideoFileClip, timestamps: 
             subclip = render(subclip, resolution=resolution)
             # Subclip Subtitling
             final_video = subtitle_subclip(subclip, transcript, start, end, i)
-
+            logging.info(f"Scene {i+1} rendered successfully. Duration: {final_video.duration} seconds. Saving...")
             #Download locally and upload to youtube. If you wish to only upload to youtube, comment the following lines, and uncomment the code below them.
-
             output_dir = os.path.join(base_output_path, "scenes")
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir, exist_ok=True)
-            out_path = f"{output_dir}/scene_{i}.mp4"
+            out_path = f"{output_dir}/scene_{i+1}.mp4"
             final_video.write_videofile(out_path, codec="libx264")
-            sleep(10) # Wait for the file to be written
+            sleep(5) # Wait for the file to be written
             logging.info(f"Subclip {i} with subtitles saved to: {out_path}")
             subclips.append(out_path)
 
@@ -183,7 +182,7 @@ def prepare_and_upload_shorts(youtube_service, clip: VideoFileClip, timestamps: 
             except Exception as e:
                 logging.error(f"An error occurred during upload of subclip{i+1} to YouTube: {e}")
             
-            sleep(10) # Rest for 10 seconds
+            sleep(5) # Rest for 5 seconds
         return subclips
     
             # Write to temporary file and upload to YouTube (If you wish to upload to youtube, if not, comment the following lines, including return 1)
@@ -196,7 +195,7 @@ def prepare_and_upload_shorts(youtube_service, clip: VideoFileClip, timestamps: 
             #     tags = ["shorts", "funny", "scene"]
             #     upload_video_to_youtube(temp_video_file.name, title=title, description=description, tags=tags)
             #     logging.info(f"Subclip {i+1} with subtitles uploaded to YouTube.")
-            #     sleep(10) # Rest for 10 seconds
+            #     sleep(5) # Rest for 5 seconds
 
         #return 1
     except Exception as e:
@@ -227,7 +226,7 @@ def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: floa
                         "end": local_end,
                         "text": text
                     })
-    logging.info(f"Transcript for subclip {i} created: {len(local_transcript)}")
+    logging.info(f"Transcript for scene {i+1} created: {len(local_transcript)}")
     # 2) Build subtitle clips for *this subclip*
     subtitle_clips = []
     for entry in local_transcript:
@@ -244,15 +243,8 @@ def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: floa
             .with_end(entry["end"]) \
             .with_position(("center", 780)))  # or ("center","bottom")
             subtitle_clips.append(txt_clip)
-    logging.info(f"Subtitles for subclip {i+1} created: {len(subtitle_clips)}")
+    logging.info(f"Subtitles for scene {i+1} created: {len(subtitle_clips)}")
     #Composite subclip + local subtitles
-    logging.info(f"Compositing subclip {i+1} with subtitles...")
+    logging.info(f"Compositing scene {i+1} with subtitles...")
     final_video = CompositeVideoClip([subclip] + subtitle_clips)
     return final_video
-
-
-if __name__ == "__main__":
-    inputto = "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/output/Mr._Robot_-_Linux_Desktop_Environment_Wars/Mr._Robot_-_Linux_Desktop_Environment_Wars.mp4"
-    input = VideoFileClip(inputto).subclipped(5, 10)
-    vid = render(input, resolution=(1080, 1920), game="subway_surfers") # 1080x1920
-    #move_up_with_black_bottom(input, "output.mp4", resolution=(1080, 1920)) # 1080x1920

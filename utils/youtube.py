@@ -53,7 +53,7 @@ def upload_video_to_youtube(video_path, title, description, tags, youtube_servic
             # 'categoryId': '22',  # optional, e.g. '22' = People & Blogs
         },
         "status": {
-            "privacyStatus": "unlisted",  # or 'unlisted' or 'public'
+            "privacyStatus": "public",  # or 'unlisted' or 'public'
         }
     }
     

@@ -6,7 +6,7 @@ from utils.processors import detect_scenes
 from utils.render import prepare_and_upload_shorts
 from utils.transcribers import get_transcript
 from utils.youtube import get_youtube_service
-import config
+import utils.config as config
 from moviepy import VideoFileClip
 from time import sleep
 import sys
@@ -19,8 +19,8 @@ youtube_service = get_youtube_service() # comment this line if you are not using
 
 def main(video_url):
     logging.info("Starting process...")
-    transcriber = config.transcriber
-    
+    transcriber = config.TRANSCRIBER
+    model = config.PREFERRED_MODELS.get(transcriber, None)
     # Download Video
     downloaded_path = download_video(video_url)
     if not downloaded_path:
@@ -28,7 +28,7 @@ def main(video_url):
         return
 
     # Get transcript
-    transcript = get_transcript(downloaded_path=downloaded_path, video_url = video_url, transcriber=transcriber)
+    transcript = get_transcript(downloaded_path=downloaded_path, video_url = video_url, transcriber=transcriber, model=model)
     if not transcript:
         logging.error("Could not get transcript. Exiting.")
         return
@@ -50,7 +50,8 @@ def main(video_url):
     return rendered_vids
     
 if __name__ == "__main__":
-    # Example usage:
-    matt_rife = "https://www.youtube.com/watch?v=Xe9ycTBoX94"
-    main("https://www.youtube.com/watch?v=ishgn7-NLlU")
-    logging.info("Script finished successfully.")
+    if len(sys.argv) < 2:
+        logging.error("Please provide a video URL.")
+        sys.exit(1)
+    input_link = sys.argv[1]
+    main(input_link)

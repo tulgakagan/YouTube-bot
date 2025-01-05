@@ -2,8 +2,6 @@ import re
 import subprocess
 import logging
 import sys
-import os
-from time import sleep
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 def detect_scenes(
@@ -57,7 +55,7 @@ def detect_scenes(
         timestamps.append(duration)
     
     if len(timestamps) == 1:
-        logging.info("No scene changes detected. Splitting the video into 60s.")
+        logging.info("No scene changes detected. Splitting the video into 60-second clips.")
         timestamps = [0.0, duration]
 
     timestamps = merge_short_scenes(timestamps, min_scene_length=20.0)

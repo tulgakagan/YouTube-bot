@@ -8,9 +8,10 @@ import vosk
 import os
 import assemblyai as aai
 import ffmpeg
+import utils.config as config
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
+assemblyai_key = config.ASSEMBLYAI_API_KEY
 def youtube_url_to_id(video_url: str) -> str:
     """
     Extract the video ID from a YouTube URL.
@@ -84,20 +85,19 @@ def extract_audio(video_path: str, output_dir: str = "output") -> str:
         # Raise error and interrupt the process.
         raise ValueError(f"FFmpeg failed to extract audio. {e.stderr.decode()}")
 
-
-
 def transcribe_audio_whisper(audio_path: str, model_name: str = None) -> list:
     """
     Transcribe audio using Whisper and return subtitle-ready segments.
     """
     if model_name is None:
-        model_name = os.getenv("WHISPER_MODEL", "small")
+        model_name = "small"
         logging.info(f"No Whisper model specified. Using default model instead.")
     logging.info(f"Loading Whisper model: {model_name}")
     model = whisper.load_model(model_name)
     logging.info(f"Starting Whisper transcription for {audio_path} with model {model_name}")
     try:
         result = model.transcribe(audio_path, word_timestamps=False)
+        logging.info(f"Whisper transcription completed.")
         segments = []
         for segment in result["segments"]:
             segments.append({
@@ -120,7 +120,7 @@ def transcribe_audio_vosk(audio_path: str, model_name: str = None) -> list[dict]
         logging.info(f"No Vosk model specified. Using default model instead.")
         
     logging.info(f"Starting Vosk transcription for {audio_path} with model {model_name}")
-    model_path = os.path.join(os.getenv("MODELS_DIRECTORY"), model_name)
+    model_path = os.path.join(config.VOSK_DIRECTORY, model_name)
     model = vosk.Model(model_path)
 
     wf = wave.open(audio_path, "rb")
@@ -171,9 +171,9 @@ def transcribe_audio_assemblyai(audio_path: str) -> list[dict]:
     """
     try:
         # Set the API key from the environment
-        aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
+        aai.settings.api_key = assemblyai_key
 
-        config = aai.TranscriptionConfig(speech_model=aai.SpeechModel.nano, speaker_labels=True)
+        config = aai.TranscriptionConfig(speech_model=aai.SpeechModel.nano)
 
         transcriber = aai.Transcriber(config=config)
         transcript = transcriber.transcribe(audio_path)
@@ -183,15 +183,14 @@ def transcribe_audio_assemblyai(audio_path: str) -> list[dict]:
         segments = []
         for word in transcript.words:
             segments.append({
-                    "start": word.start,
-                    "end": word.end,
+                    "start": word.start / 1000,
+                    "end": word.end / 1000,
                     "text": word.text
                 })
         return segments
     except Exception as e:
         logging.error(f"AssemblyAI transcription failed: {e}")
         return []
-    
 def get_transcript(downloaded_path, video_url = None, transcriber = "whisper", model = None):
     # Check if the video has an official transcript
     video_id = youtube_url_to_id(video_url)
@@ -223,3 +222,11 @@ def get_transcript(downloaded_path, video_url = None, transcriber = "whisper", m
             transcript = transcribe_audio_whisper(audio_path, model_name=model)
     
     return transcript
+
+if __name__ == "__main__":
+    video_url = "https://www.youtube.com/watch?v=PtyvtyIs1So"
+    downloaded_path = "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/output/Mr._Robot_-_Linux_Desktop_Environment_Wars/Mr._Robot_-_Linux_Desktop_Environment_Wars.mp4"
+    transcriber = "vosk"
+    model = None
+    transcript = get_transcript(downloaded_path=downloaded_path, transcriber=transcriber, model=model)
+    print(transcript)
