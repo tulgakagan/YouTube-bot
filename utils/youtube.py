@@ -9,6 +9,11 @@ import os
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 
 def get_credentials():
+    """
+    Get credentials for the YouTube API.
+    If valid credentials exist, they are loaded from token.json.
+    If not, a new OAuth flow is started to get new credentials.
+    """
     creds = None
     
     # If a token file already exists, load it to skip re-auth
@@ -34,6 +39,9 @@ def get_credentials():
 
 
 def get_youtube_service():
+    """
+    Create a YouTube Data API service object.
+    """
     creds = get_credentials()
     youtube = build("youtube", "v3", credentials=creds, cache_discovery=False)
     return youtube

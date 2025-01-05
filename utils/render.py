@@ -10,13 +10,13 @@ from utils.youtube import upload_video_to_youtube
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def get_brainrot_footage(game: str=None, config_path: str="utils/configurasyon.py"):
+def get_brainrot_footage(game: str=None, config_path: str="utils/config.py"):
     """
     Returns the brainrot footage for the specified game.
 
     Args:
         game (str): The game to get the brainrot footage for.
-        resolution (tuple): Tuple of the desired resolution of the video.
+        config_path (str): The path to the configuration file.
 
     Returns:
         VideoFileClip, str: The specified game.
@@ -62,11 +62,12 @@ def get_brainrot_footage(game: str=None, config_path: str="utils/configurasyon.p
 
 def render(clip: VideoFileClip, resolution: tuple=(1080, 1920), game: str=None):
     """
-    Resizes, centers, and renders a video clip with optional edge blur if needed.
+    Resizes video by positioning the main clip on top of a random video game footage.
 
     Args:
         clip (VideoFileClip): The original video clip to resize.
         resolution (tuple): Tuple of the desired resolution of the video.
+        game (str): The game to get the footage for.
 
     Returns:
         VideoFileClip: The final video clip with the desired resolution.
@@ -134,9 +135,11 @@ def prepare_and_upload_shorts(youtube_service, clip: VideoFileClip, timestamps: 
                               transcript: list = None, base_output_path: str = "output",
                               ) -> list:
     """
-    Cuts, renders, adds subtitles, and saves multiple scenes from a video clip.
+    Cuts, renders, adds subtitles, and saves multiple scenes from a video clip. Uploads the scenes to YouTube.
 
     Args:
+        youtube_service: The YouTube service object.
+        clip (VideoFileClip): The original video clip.
         timestamps (list): List of timestamps to split the video into scenes.
         transcript (list): List of dictionaries containing subtitle information with keys "start", "end", and "text".
         base_output_path (str): The base directory to save the rendered scenes.
@@ -201,7 +204,18 @@ def prepare_and_upload_shorts(youtube_service, clip: VideoFileClip, timestamps: 
     except Exception as e:
         logging.error(f"An error occurred during multiple rendering: {e}")
 
-def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: float, end: float, i: int) -> list:
+def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: float, end: float, i: int) -> CompositeVideoClip:
+    """
+    Subtitles a subclip with the given transcript.
+    args:
+        subclip (VideoFileClip): The subclip to subtitle.
+        transcript (list[dict]): The list of dictionaries containing subtitle information.
+        start (float): The start time of the subclip.
+        end (float): The end time of the subclip.
+        i (int): The index of the subclip.
+    Returns:
+        CompositeVideoClip: The final video clip with subtitles.
+    """
     local_transcript = []
     for entry in transcript:
         start_global = entry["start"]

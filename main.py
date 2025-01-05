@@ -17,6 +17,13 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=lo
 #Initialize YouTube API service
 
 def main(video_url):
+    """
+    The main function.
+    1. Downloads the video
+    2. Gets the transcript
+    3. Detects scenes
+    4. Prepares and uploads shorts
+    """
     logging.info("Starting process...")
     transcriber = config.TRANSCRIBER
     model = config.PREFERRED_MODELS.get(transcriber, None)

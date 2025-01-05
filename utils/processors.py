@@ -13,6 +13,13 @@ def detect_scenes(
     """
     Run ffmpeg scene detection on a given video and return the sorted list of
     timestamps (in seconds) where scene changes occur.
+    Args:
+        input_video (str): Path to the input video file.
+        threshold (float): The threshold for scene change detection. The higher the value, the less sensitive the detection.
+        start_sec (float): Start time in seconds for scene detection.
+        end_sec (float): End time in seconds for scene detection.
+    Returns:
+        List[float]: A sorted list of timestamps where scene changes occur.
     """
 
     # Build ffmpeg filter expression

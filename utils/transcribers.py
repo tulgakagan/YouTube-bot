@@ -30,6 +30,9 @@ def youtube_url_to_id(video_url: str) -> str:
         return None
 
 def fetch_official_transcript(video_id: str, language_code: str = "en") -> list:
+    """
+    Fetch the official transcript of a YouTube video.
+    """
     if not video_id:
         logging.warning("No video ID provided.")
         return None
@@ -191,7 +194,20 @@ def transcribe_audio_assemblyai(audio_path: str) -> list[dict]:
     except Exception as e:
         logging.error(f"AssemblyAI transcription failed: {e}")
         return []
-def get_transcript(downloaded_path, video_url = None, transcriber = "whisper", model = None):
+def get_transcript(downloaded_path: str, video_url: str = None, transcriber: str = "vosk", model: str = None) -> list[dict]:
+    """
+    Get the transcript of a video using
+    - Official YouTube transcript (if available)
+    - Vosk (default)
+    - Whisper
+    - AssemblyAI
+    Args:
+        downloaded_path: str: Path to the downloaded video file.
+        video_url: str: URL of the video to transcribe.
+    
+    Returns:
+        list[dict]: A list of subtitle-ready segments with start, end, and text
+    """
     # Check if the video has an official transcript
     video_id = youtube_url_to_id(video_url)
     transcript = fetch_official_transcript(video_id)
