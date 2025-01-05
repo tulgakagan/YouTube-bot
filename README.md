@@ -12,7 +12,7 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 
 ## Features
 
-- **Multiple Transcribers**: Choose from `whisper`, `vosk`, or `assemblyai` in `utils/config.py`.
+- **Multiple Transcribers**: Choose from `whisper`, `vosk`, or `assemblyai` in` utils/config.py`.
 - **Automated Scene Splitting**: Scenes under 20 seconds are merged; scenes over 60 seconds are split, to adhere to YouTube Shorts format standards.
 - **Brainrot Footage**: The final 9:16 video has the main subclip on top and a random video game clip (Temple Run, Subway Surfers, Geometry Dash, etc...) beneath. You can customize the videos used as brainrot footage in ùtils/config.py`.
 - **Subtitle Overlays**: Subtitles are positioned near the bottom of the main video, just above the 'brainrot footage'.
