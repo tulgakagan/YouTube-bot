@@ -38,10 +38,3 @@ def download_video(video_url: str, output_dir: str = "output") -> str:
     except Exception as e:
         logging.error(f"Download failed: {e}")
         return None
-    
-if __name__ == "__main__":
-    video_url = "https://www.youtube.com/watch?v=Nir5MNmPzZo"
-    download_video(video_url)
-
-
-

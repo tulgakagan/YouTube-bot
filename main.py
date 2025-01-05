@@ -15,12 +15,12 @@ import sys
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG)  # Change to INFO or ERROR in production
 
 #Initialize YouTube API service
-youtube_service = get_youtube_service() # comment this line if you are not using youtube service
 
 def main(video_url):
     logging.info("Starting process...")
     transcriber = config.TRANSCRIBER
     model = config.PREFERRED_MODELS.get(transcriber, None)
+    youtube_service = get_youtube_service() # comment this line if you are not using youtube service
     # Download Video
     downloaded_path = download_video(video_url)
     if not downloaded_path:

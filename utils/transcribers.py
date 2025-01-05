@@ -222,11 +222,3 @@ def get_transcript(downloaded_path, video_url = None, transcriber = "whisper", m
             transcript = transcribe_audio_whisper(audio_path, model_name=model)
     
     return transcript
-
-if __name__ == "__main__":
-    video_url = "https://www.youtube.com/watch?v=PtyvtyIs1So"
-    downloaded_path = "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/output/Mr._Robot_-_Linux_Desktop_Environment_Wars/Mr._Robot_-_Linux_Desktop_Environment_Wars.mp4"
-    transcriber = "vosk"
-    model = None
-    transcript = get_transcript(downloaded_path=downloaded_path, transcriber=transcriber, model=model)
-    print(transcript)
