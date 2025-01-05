@@ -13,7 +13,7 @@ MODELS = {
     "assemblyai": [None]
 }
 VOSK_DIRECTORY = "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/utils/models"
-ASSEMBLYAI_API_KEY = None # Add your AssemblyAI API key here if you are using AssemblyAI transcriber
+ASSEMBLYAI_API_KEY = "PLACEHOLDER_KEY" # Add your AssemblyAI API key here if you are using AssemblyAI transcriber
 
 brainrot_footage = {
     "subway_surfers": {
@@ -21,7 +21,7 @@ brainrot_footage = {
         "vid2": ["https://www.youtube.com/watch?v=HTMDNZOlUq4", "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/utils/footage_subway_surfers/Subway_Surfers_But_in_Unreal_Engine_5/Subway_Surfers_But_in_Unreal_Engine_5.mp4"], # Subway Surfers but in Unreal Engine
     },
     "temple_run": {
-        "vid1": ["https://www.youtube.com/watch?v=fuQf-iGCmKA", "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/utils/footage_temple_run/Temple_Run_2_2023_-_Gameplay_PC_UHD_4K60FPS/Temple_Run_2_2023_-_Gameplay_PC_UHD_4K60FPS.f401.mp4"], # Temple run 2 gameplay
+        "vid1": ["https://www.youtube.com/watch?v=fuQf-iGCmKA", ""], # Temple run 2 gameplay
         "vid2": ["https://www.youtube.com/watch?v=m-ioG4KEVyc", "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/Project/utils/footage_temple_run/Temple_RunTM_But_in_Unreal_Engine_5/Temple_RunTM_But_in_Unreal_Engine_5.mp4"], # Temple Run but in Unreal Engine
     },
     "geometry_dash": {

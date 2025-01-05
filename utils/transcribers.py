@@ -208,6 +208,10 @@ def get_transcript(downloaded_path: str, video_url: str = None, transcriber: str
     Returns:
         list[dict]: A list of subtitle-ready segments with start, end, and text
     """
+    # Check if video_url contains a valid YouTube URL
+    if "youtube.com" not in video_url:
+        #logging.warning("Input is not a YouTube link. Skipping official transcript check.")
+        video_url = None
     # Check if the video has an official transcript
     video_id = youtube_url_to_id(video_url)
     transcript = fetch_official_transcript(video_id)
