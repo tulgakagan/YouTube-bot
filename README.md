@@ -13,9 +13,9 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 ## Features
 
 - **Multiple Transcribers**: Choose from `whisper`, `vosk`, or `assemblyai` in `utils/config.py`.
-- **Automated Scene Splitting**: Scenes under 20 seconds are merged; scenes over 60 seconds are split.
-- **Brainrot Footage**: The final 9:16 video has the main subclip on top and a random background clip (Temple Run, Subway Surfers, etc.) beneath.
-- **Subtitle Overlays**: Subtitles are positioned near the bottom of the video.
+- **Automated Scene Splitting**: Scenes under 20 seconds are merged; scenes over 60 seconds are split, to adhere to YouTube Shorts format standards.
+- **Brainrot Footage**: The final 9:16 video has the main subclip on top and a random video game clip (Temple Run, Subway Surfers, Geometry Dash, etc...) beneath. You can customize the videos used as brainrot footage in ùtils/config.py`.
+- **Subtitle Overlays**: Subtitles are positioned near the bottom of the main video, just above the 'brainrot footage'.
 - **YouTube Data API**: Automatically uploads each generated scene to YouTube.
 
 ---
@@ -59,7 +59,7 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
    - If you set `TRANSCRIBER = "assemblyai"` in `utils/config.py`, insert your key in `config.ASSEMBLYAI_API_KEY` or set `export ASSEMBLYAI_API_KEY=yourkey` as an environment variable.
 
 6. **Vosk Model** (Optional):
-   - If you choose `TRANSCRIBER = "vosk"`, download a Vosk model and place it in `config.VOSK_DIRECTORY`. Make sure to set the correct path in `utils/config.py`.
+   - If you choose `TRANSCRIBER = "vosk"`, download a Vosk model from [Download Vosk Model](alphacephei.com/vosk/models) and place it in `config.VOSK_DIRECTORY`. Make sure to set the correct path in `utils/config.py`.
 
 ---
 
@@ -99,8 +99,9 @@ Edit `utils/config.py` to customize:
 ## Known Limitations
 
 - `Long Titles`: If the YouTube title is very long, path or filename issues can arise. restrictfilenames in yt_dlp helps, but remains something to watch.
-- `Scene Detection Thresholds`: The default threshold is 0.8 in processors.py. Adjust if you’re under-splitting scenes.
+- `Scene Detection Thresholds`: The default threshold is 0.8 in `utils/processors.py`. Adjust if you’re under-splitting scenes.
 - `Network Requirements`: Downloads and uploads require a stable internet connection.
+- `Time Complexity`: On non-GPU utilizable devices, the `.writevideofile()` command takes up quite a long time. Combined with the added delay in between uploading videos to YouTube, the script runs slow on CPU.
 
 ## Contributing
 
