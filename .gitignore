@@ -2,10 +2,11 @@ __pycache__
 .DS_Store
 requirements.in
 .env
-utils/uploader.py
+*.mp3
 *.mp4
 token.json
 client_secret.json
 utils/footage*
 utils/models/*
 output/*
+*.log

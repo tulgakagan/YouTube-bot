@@ -12,10 +12,10 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 
 ## Features
 
-- **Multiple Transcribers**: Choose from `whisper`, `vosk`, or `assemblyai` in` utils/config.py`.
+- **Multiple Transcribers**: Choose from `whisper`, `vosk`, or `assemblyai` in `utils/config.py`.
 - **Automated Scene Splitting**: Scenes under 20 seconds are merged; scenes over 60 seconds are split, to adhere to YouTube Shorts format standards.
-- **Brainrot Footage**: The final 9:16 video has the main subclip on top and a random video game clip (Temple Run, Subway Surfers, Geometry Dash, etc...) beneath. You can customize the videos used as brainrot footage in ùtils/config.py`.
-- **Subtitle Overlays**: Subtitles are positioned near the bottom of the main video, just above the 'brainrot footage'.
+- **Brainrot Footage**: The final 9:16 video has the main subclip on top and a random video game clip (Temple Run, Subway Surfers, Geometry Dash, etc...) beneath. You can customize the videos used as brainrot footage in `utils/config.py`.
+- **Subtitle Overlays**: Subtitles are positioned near the bottom of the main video, just above the "brainrot footage".
 - **YouTube Data API**: Automatically uploads each generated scene to YouTube.
 
 ---
@@ -25,8 +25,8 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 1. **Clone** this repository:
 
    ```bash
-   git clone https://github.com/<username>/tulgakagan-YouTube-bot.git
-   cd tulgakagan-YouTube-bot
+   git clone https://github.com/tulgakagan/YouTube-bot.git
+   cd YouTube-bot
    ```
 
 2. **Create a Virtual Environment** (recommended):
@@ -50,8 +50,8 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 
 4. **YouTube API Setup**:
 
-   - Enable the **YouTube Data API v3** on your Google Cloud project.
-   - Download the `client_secret.json` file from the Google Cloud Console and place it in the root folder (alongside `main.py`).
+   - Enable the **YouTube Data API v3** on your Google Cloud project. Make sure you have "Manage your YouTube videos" permission enabled.
+   - **Important**: Obtain a `client_secret.json` file from the [Google Cloud Console](console.cloud.google.com) (where you configured your API credentials) and place it in the project’s **root directory** (alongside `main.py`). This file is required for OAuth-based authentication to **upload** clips to YouTube.
    - The script will create a `token.json` after the first run.
 
 5. **AssemblyAI Key** (Optional):
@@ -60,6 +60,15 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 
 6. **Vosk Model** (Optional):
    - If you choose `TRANSCRIBER = "vosk"`, download a Vosk model from [Download Vosk Model](alphacephei.com/vosk/models) and place it in `config.VOSK_DIRECTORY`. Make sure to set the correct path in `utils/config.py`.
+
+---
+
+## Compatibility Notes
+
+- MoviePy Versions: This project requires moviepy versions 2.0+. Versions <2.0 will introduce breaking changes that are incompatible with the current implementation(major renaming updates).
+- NumPy Versions: Ensure that you are using numpy versions <2.0.0. The project is not compatible with versions 2.0.0 or higher.
+
+* **Tip**: If you install dependencies using `requirements.txt`, the correct versions will automatically be installed.
 
 ---
 
@@ -73,18 +82,24 @@ python main.py "https://www.youtube.com/watch?v=<YOUR_VIDEO_ID>"
 
 **Flow:**
 
-1. The script **downloads** the YouTube video into `output/<Title>/<Title>.mp4`.
+1. The script **downloads** the YouTube video into `output/<Title>/<Title>.mp4`. If input is a local file, skips downloading.
+
+   - **Note**: Using a local file will lead to the skipping of searching for a YouTube official transcript.
 
 2. It checks for an official YouTube transcript. If unavailable, it **transcribes** locally (Whisper, Vosk, or AssemblyAI).
 
 3. It **detects** scene changes using FFmpeg.
 
 4. For each scene that is between 20 and 60 seconds:
+
    - Subclips the main video
-   - Renders it in 9:16 format with background footage
+   - Renders it in 9:16 format with brainrot footage
    - Subtitles are added
-   - Saves it locally in output/scenes/
-   - Uploads the clip to YouTube
+   - Saves it locally in `output/scenes/`
+
+5. For each scene in `output/scenes/`:
+   - Uploads the video to YouTube
+   - Waits between 10 to 20 minutes before uplading the next scene
 
 You’ll be prompted for Google OAuth the first time you run it. Once complete, the clip(s) appear in your YouTube channel.
 
@@ -93,7 +108,7 @@ You’ll be prompted for Google OAuth the first time you run it. Once complete, 
 Edit `utils/config.py` to customize:
 
 - `TRANSCRIBER`: Set to `whisper`, `vosk`, or `assemblyai`.
-- `PREFERRED_MODELS`: A dictionary mapping transcribers to model names.
+- `PREFERRED_MODELS`: A dictionary mapping transcribers to model names. (Optional)
 - `brainrot_footage`: Mapping of different background clips (Temple Run, Subway Surfers, etc.). If a local path is missing, the script tries to download it.
 
 ## Known Limitations

@@ -5,12 +5,8 @@ import utils.config as config
 from utils.downloaders import download_video_if_needed
 from time import sleep
 import os
-from utils.youtube import upload_video_to_youtube
-#import tempfile #If you wish to download locally
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
-def get_brainrot_footage(game: str=None, config_path: str="utils/config.py"):
+def get_brainrot_footage(game: str=None, config_path: str="utils/config.py") -> VideoFileClip:
     """
     Returns the brainrot footage for the specified game.
 
@@ -37,23 +33,23 @@ def get_brainrot_footage(game: str=None, config_path: str="utils/config.py"):
     try:
         result = VideoFileClip(footage_path).without_audio()
     except Exception as e:
-        logging.error(f"Error loading footage for game '{game}' from path: {footage_path}.")
+        logging.warning(f"Error loading footage for game '{game}' from path: {footage_path}. Will download from source.")
         footage_path = None
     if not footage_path:
         logging.info(f"Footage path for footage '{footage}' not found. Downloading from source: {source}")
         footage_path = download_video_if_needed(source, output_dir=f"footage_{game}")
-
-        # Update the configurasyon module with the new footage path
+        sleep(1) # Wait for a second to ensure the download is complete
+        # Update the config module with the new footage path
         config.brainrot_footage[game][footage][1] = footage_path
 
-        # Make the change permanent in the configuration file
+        # Make the change permanent in the config file
         with open(config_path, 'r') as file:
             config_data = file.read()
 
-        # Update the footage path in the configuration data
+        # Update the footage path in the config data
         config_data = config_data.replace(f'"{source}", None', f'"{source}", "{footage_path}"')
 
-        # Write the updated configuration back to the file
+        # Write the updated config back to the file
         with open(config_path, 'w') as file:
             file.write(config_data)
         logging.info(f"Loading footage for game '{game}' from path: {footage_path}")
@@ -65,7 +61,7 @@ def get_brainrot_footage(game: str=None, config_path: str="utils/config.py"):
     return result
 
 
-def render(clip: VideoFileClip, resolution: tuple=(1080, 1920), game: str=None):
+def render(clip: VideoFileClip, resolution: tuple=(1080, 1920), game: str=None) -> VideoFileClip:
     """
     Resizes video by positioning the main clip on top of a random video game footage.
 
@@ -82,13 +78,13 @@ def render(clip: VideoFileClip, resolution: tuple=(1080, 1920), game: str=None):
         game = np.random.choice(brainrot_games)
         logging.info(f"No game specified. Randomly selected game: {game}")
 
-    if game not in brainrot_games:
+    elif game not in brainrot_games:
         logging.error(f"Game '{game}' not found in brainrot games.")
         raise ValueError(f"Game '{game}' not found in brainrot games.")
     
     try:
         #main_clip = clip.resized(height=resolution[1]//2, width=resolution[0])
-        main_clip = clip.resized(height=840, width=resolution[0])
+        main_clip = clip.resized(height=840, width=resolution[0]) # height: 840 To make space for subtitles and to not lose too much of the main clip after cropping
         #Fill the rest of the video with brainrot footage
         brainrot_clip = get_brainrot_footage(game)
         brainrot_clip = brainrot_clip.cropped(
@@ -105,7 +101,7 @@ def render(clip: VideoFileClip, resolution: tuple=(1080, 1920), game: str=None):
             #trim the brainrot clip
             #random initialisation of the start time
             start_time = np.random.uniform(0, duration_diff)
-            logging.info(f"Trimming brainrot clip to match main clip duration. Start time: {start_time}, Duration: {main_clip.duration}")
+            logging.debug(f"Trimming brainrot clip to match main clip duration. Start time: {start_time}, Duration: {main_clip.duration}")
             brainrot_clip = brainrot_clip.subclipped(start_time, start_time + main_clip.duration)
         elif duration_diff < 0:
             #brainrot clip is shorter than main clip
@@ -114,7 +110,7 @@ def render(clip: VideoFileClip, resolution: tuple=(1080, 1920), game: str=None):
 
         #Resize the brainrot clip to match the main clip
         orig_w, orig_h = brainrot_clip.size
-        target_h = 1080 #leaving some space for the subtitles 910
+        target_h = 1080 # A little more than main clip height, because we want the main clip to not be cropped too much
         scale_factor = target_h / orig_h
         scaled_w = int(orig_w * scale_factor)
         x_center = scaled_w / 2
@@ -123,91 +119,17 @@ def render(clip: VideoFileClip, resolution: tuple=(1080, 1920), game: str=None):
         brainrot_clip = brainrot_clip.resized((scaled_w, target_h)) \
             .cropped(x1=x1, y1=0, width=1080, height=target_h)
 
-        logging.info(f"Brainrot clip resized successfully. New dimensions: {brainrot_clip.size}")
+        logging.debug(f"Brainrot clip resized successfully. New dimensions: {brainrot_clip.size}")
 
         #Compose main clip and brainrot clip, with brainrot clip below and main clip on top
-        logging.info(f"Main clip size and position: {main_clip.size}\n Brainrot clip size: {brainrot_clip.size}")
+        logging.debug(f"Main clip size and position: {main_clip.size}\n Brainrot clip size: {brainrot_clip.size}")
         sleep(1)
         video = CompositeVideoClip([main_clip.with_position("top"), brainrot_clip.with_position("bottom")], size=resolution)
         sleep(1)
         return video
     except Exception as e:
-        logging.debug(f"An error occurred during rendering: {e}")
+        logging.error(f"An error occurred during rendering: {e}")
         return None
-
-def prepare_and_upload_shorts(youtube_service, clip: VideoFileClip, timestamps: list=None,
-                              resolution: tuple=(1080,1920), game: str = None,
-                              transcript: list = None, base_output_path: str = "output",
-                              ) -> list:
-    """
-    Cuts, renders, adds subtitles, and saves multiple scenes from a video clip. Uploads the scenes to YouTube.
-
-    Args:
-        youtube_service: The YouTube service object.
-        clip (VideoFileClip): The original video clip.
-        timestamps (list): List of timestamps to split the video into scenes.
-        transcript (list): List of dictionaries containing subtitle information with keys "start", "end", and "text".
-        base_output_path (str): The base directory to save the rendered scenes.
-
-    Returns:
-        list: List of file paths for each rendered scene.
-    """
-    subclips = []  #Used only if you wish to download locally
-    try:
-        for i in range(len(timestamps) - 1):
-            start = timestamps[i]
-            end = timestamps[i + 1]
-            if end-start < 20:
-                logging.info(f"Scene {i+1} is too short. Skipping...")
-                continue
-            if end-start > 60:
-                logging.error(f"Scene {i+1} is too long. Skipping...")
-                continue
-            logging.info(f"Rendering scene {i+1} from {start} to {end}...")
-            subclip = clip.subclipped(start, end)
-
-            subclip = render(subclip, resolution=resolution)
-            # Subclip Subtitling
-            final_video = subtitle_subclip(subclip, transcript, start, end, i)
-            logging.info(f"Scene {i+1} rendered successfully. Duration: {final_video.duration} seconds. Saving...")
-            #Download locally and upload to youtube. If you wish to only upload to youtube, comment the following lines, and uncomment the code below them.
-            output_dir = os.path.join(base_output_path, "scenes")
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir, exist_ok=True)
-            out_path = f"{output_dir}/scene_{i+1}.mp4"
-            final_video.write_videofile(out_path, codec="libx264")
-            sleep(5) # Wait for the file to be written
-            logging.info(f"Scene {i+1} with subtitles saved to: {out_path}")
-            subclips.append(out_path)
-
-            vid_name = os.path.basename(base_output_path).replace("_", " ")
-            title = f"Part {i+1}"
-            description = f"This video has been automatically generated for my course 20875 - SOFTWARE ENGINEERING, video name: {vid_name} #shorts"
-            tags = ["shorts", "funny", "scene"]
-            try:
-                upload_video_to_youtube(out_path, title=title, description=description, tags=tags, youtube_service=youtube_service)
-                logging.info(f"Scene {i+1} with subtitles uploaded to YouTube.")
-            except Exception as e:
-                logging.error(f"An error occurred during upload of subclip{i+1} to YouTube: {e}")
-            
-            sleep(5) # Rest for 5 seconds
-        return subclips
-    
-            # Write to temporary file and upload to YouTube (If you wish to upload to youtube, if not, comment the following lines, including return 1)
-            # with tempfile.NamedTemporaryFile(suffix=".mp4", delete=True) as temp_video_file:
-            #     final_video.write_videofile(temp_video_file.name, codec="libx264")
-            #     logging.info(f"Subclip {i+1} with subtitles saved to: {temp_video_file.name}")
-            #     vid_name = base_output_path.replace("_", " ")
-            #     title = f"Part {i+1}"
-            #     description = f"This video has been automatically generated for my course 20875 - SOFTWARE ENGINEERING, video name: {vid_name} #shorts"
-            #     tags = ["shorts", "funny", "scene"]
-            #     upload_video_to_youtube(temp_video_file.name, title=title, description=description, tags=tags)
-            #     logging.info(f"Subclip {i+1} with subtitles uploaded to YouTube.")
-            #     sleep(5) # Rest for 5 seconds
-
-        #return 1
-    except Exception as e:
-        logging.error(f"An error occurred during multiple rendering: {e}")
 
 def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: float, end: float, i: int) -> CompositeVideoClip:
     """
@@ -245,7 +167,7 @@ def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: floa
                         "end": local_end,
                         "text": text
                     })
-    logging.info(f"Transcript for scene {i+1} created: {len(local_transcript)}")
+    logging.debug(f"Transcript for scene {i+1} created: {len(local_transcript)}")
     # 2) Build subtitle clips for *this subclip*
     subtitle_clips = []
     for entry in local_transcript:
@@ -262,9 +184,9 @@ def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: floa
             .with_end(entry["end"]) \
             .with_position(("center", 780)))  # or ("center","bottom")
             subtitle_clips.append(txt_clip)
-    logging.info(f"Subtitles for scene {i+1} created: {len(subtitle_clips)}")
+    logging.debug(f"Subtitles for scene {i+1} created: {len(subtitle_clips)}")
     #Composite subclip + local subtitles
-    logging.info(f"Compositing scene {i+1} with subtitles...")
+    logging.debug(f"Compositing scene {i+1} with subtitles...")
     final_video = CompositeVideoClip([subclip] + subtitle_clips)
     return final_video
 
@@ -272,7 +194,7 @@ def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: floa
 def prepare_shorts(clip: VideoFileClip, timestamps: list=None,
                               resolution: tuple=(1080,1920), game: str = None,
                               transcript: list = None, base_output_path: str = "output",
-                              ) -> list:
+                              ) -> list[str]:
     """
     Cuts, renders, adds subtitles, and saves multiple scenes from a video clip.
 
@@ -283,11 +205,12 @@ def prepare_shorts(clip: VideoFileClip, timestamps: list=None,
         base_output_path (str): The base directory to save the prepared videos.
 
     Returns:
-        list: List of file paths for each prepared video.
+        list[str]: List of file paths for each prepared video.
     """
     subclips = []
     try:
-        for i in range(len(timestamps) - 1):
+        scene_count = len(timestamps) - 1
+        for i in range(scene_count):
             start = timestamps[i]
             end = timestamps[i + 1]
             if end-start < 20:
@@ -296,14 +219,14 @@ def prepare_shorts(clip: VideoFileClip, timestamps: list=None,
             if end-start > 60:
                 logging.error(f"Scene {i+1} is too long. Skipping...")
                 continue
-            logging.info(f"Rendering scene {i+1} from {start} to {end}...")
+            logging.info(f"Rendering scene {i+1} of {scene_count} from {start} to {end}...")
             scene = clip.subclipped(start, end)
 
             scene = render(scene, resolution=resolution)
-            logging.info(f"Scene {i+1} rendered successfully. Duration: {scene.duration} seconds. Subtitling...")   
+            logging.info(f"Scene {i+1} of {scene_count} rendered successfully. Duration: {scene.duration} seconds. Subtitling...")   
             # Scene Subtitling
             final_video = subtitle_subclip(scene, transcript, start, end, i)
-            logging.info(f"Scene {i+1} subtitled successfully. Saving...")
+            logging.info(f"Scene {i+1} of {scene_count} subtitled successfully. Saving...")
             #Downloading locally
             output_dir = os.path.join(base_output_path, "scenes")
             if not os.path.exists(output_dir):
@@ -316,3 +239,6 @@ def prepare_shorts(clip: VideoFileClip, timestamps: list=None,
         return subclips
     except Exception as e:
         logging.error(f"An error occurred while preparing shorts: {e}")
+    except KeyboardInterrupt:
+        logging.error("Process interrupted.")
+        return subclips

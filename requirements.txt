@@ -89,7 +89,7 @@ networkx==3.4.2
     # via torch
 numba==0.60.0
     # via openai-whisper
-numpy==2.0.2
+numpy==1.25.0
     # via
     #   -r requirements.in
     #   imageio

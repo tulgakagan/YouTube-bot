@@ -3,7 +3,6 @@ import subprocess
 import logging
 import sys
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 def detect_scenes(
     input_video: str,
     threshold: float = 0.8,
@@ -66,13 +65,13 @@ def detect_scenes(
         timestamps = [0.0, duration]
 
     timestamps = merge_short_scenes(timestamps, min_scene_length=20.0)
-    logging.info(f"Scene timestamps after merging: {timestamps}")
+    logging.debug(f"Scene timestamps after merging: {timestamps}")
     timestamps = split_long_scenes(timestamps)
-    logging.info(f"Scene timestamps after splitting: {timestamps}")
+    logging.debug(f"Scene timestamps after splitting: {timestamps}")
 
     logging.info(f"Scene timestamps created. Total scenes: {len(timestamps)-1}")
 
-    logging.info(f"First scene starts at {timestamps[0]}s, ends at {timestamps[1]}s.")
+    logging.debug(f"First scene starts at {timestamps[0]}s, ends at {timestamps[1]}s.")
     return timestamps
 
 def merge_short_scenes(scene_timestamps: list[float], min_scene_length: float) -> list[float]:

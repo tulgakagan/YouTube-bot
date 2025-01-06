@@ -3,7 +3,10 @@ from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from googleapiclient.errors import HttpError
 import os
+import logging
+from utils.config import UPLOAD_LOG_FILE, FAILED_UPLOAD_LOG_FILE
 
 # The YouTube Data API scope for uploading videos
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
@@ -61,7 +64,8 @@ def upload_video_to_youtube(video_path, title, description, tags, youtube_servic
             # 'categoryId': '22',  # optional, e.g. '22' = People & Blogs
         },
         "status": {
-            "privacyStatus": "public",  # or 'unlisted' or 'public'
+            "privacyStatus": "public", # or "private" or "unlisted"
+            "madeForKids": False
         }
     }
     
@@ -77,7 +81,46 @@ def upload_video_to_youtube(video_path, title, description, tags, youtube_servic
     try:
         response = request.execute()
         print(f"Upload successful! Video ID: {response.get('id')}")
+        return response
+    except HttpError as e:
+        error_details = e.content.decode() if hasattr(e, 'content') else str(e)
+        logging.error(f"HTTP Error: {error_details}")
+        
+        # Handle specific upload limit error
+        if 'uploadLimitExceeded' in error_details:
+            logging.error("Upload limit exceeded. Skipping further uploads for today.")
+            return {"error": "uploadLimitExceeded"}
+        else:
+            raise
     except Exception as e:
-        print(f"An error occurred while uploading: {e}")
+        logging.error(f"An unexpected error occurred: {e}")
         raise
-    return response
+
+def upload_scene(scene_path: str, idx: int, dir_name: str, youtube_service) -> bool:
+    """
+    Uploads a scene video to YouTube.
+    Args:
+        scene_path (str): Path to the scene video file.
+        idx (int): Index of the scene.
+        vid_name (str): Name of the video.
+        youtube_service: YouTube Data API service object.
+    Returns:
+        tuple: (bool, bool) - (success, limit_reached)
+    """
+    logging.info(f"Uploading scene {idx+1} to YouTube...")
+    vid_name = os.path.basename(dir_name).replace("_", " ")
+    title = f"{vid_name} - Part {idx+1}"
+    description = f"This video has been automatically generated for course 20875 - SOFTWARE ENGINEERING, video name: {vid_name} #shorts"
+    tags = ["shorts", "funny", "scene"]
+    limit_reached = False
+    try:
+        response = upload_video_to_youtube(scene_path, title=title, description=description, tags=tags, youtube_service=youtube_service)
+        if response == {"error": "uploadLimitExceeded"}:
+            logging.warning("Daily upload limit reached. Stopping uploads.")
+            limit_reached = True
+            return False, limit_reached
+        logging.info(f"Scene {idx+1} uploaded to YouTube.")
+        return True, limit_reached
+    except Exception as e:
+        logging.error(f"Error uploading scene {idx+1}: {e}")
+        return False, limit_reached

@@ -10,7 +10,6 @@ import assemblyai as aai
 import ffmpeg
 import utils.config as config
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 assemblyai_key = config.ASSEMBLYAI_API_KEY
 def youtube_url_to_id(video_url: str) -> str:
     """

@@ -2,10 +2,6 @@ import os
 from yt_dlp import YoutubeDL
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
 def download_video_if_needed(input: str, output_dir: str = "output") -> str:
     """
     Download YouTube video using yt-dlp and save it to the given output directory,
