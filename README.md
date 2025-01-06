@@ -64,7 +64,7 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 
 ---
 
-## Compatibility Notes
+### Compatibility Notes
 
 - MoviePy Versions: This project requires moviepy versions 2.0+. Versions <2.0 are incompatible due to major renaming updates in newer releases.
 - NumPy Versions: Ensure that you are using numpy versions <2.0.0. The project is not compatible with versions 2.0.0 or higher.
@@ -137,7 +137,13 @@ Edit `utils/config.py` to customize:
 - `Scene Detection Thresholds`: The default threshold is 0.8 in `utils/processors.py`. Adjust if you’re under-splitting scenes.
 - `Network Requirements`: Downloads and uploads require a stable internet connection.
 - `Time Complexity`: On non-GPU devices, rendering with `.write_videofile()` takes significant time, making the pipeline slow on CPU.
+- `Rate Limits`: YouTube allows a maximum of 6 video uploads per day via APIs.
 
 ## Contributing
 
 Feel free to open issues or pull requests to improve functionality or add new features.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).  
+You are free to use, modify, and distribute this software as long as the original copyright notice is included. See the `LICENSE` file for more details.
