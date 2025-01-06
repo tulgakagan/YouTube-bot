@@ -5,6 +5,7 @@ import utils.config as config
 from utils.downloaders import download_video_if_needed
 from time import sleep
 import os
+import re
 
 def get_brainrot_footage(game: str=None, config_path: str="utils/config.py") -> VideoFileClip:
     """
@@ -27,6 +28,7 @@ def get_brainrot_footage(game: str=None, config_path: str="utils/config.py") -> 
     logging.info(f"{len(vid_list)} footages found for game '{game}'")
     footage = np.random.choice(vid_list)
     source, footage_path = footages.get(footage)
+    invalid_path = "placeholder"
     if not source:
         logging.error(f"Source for footage '{footage}' not found.")
         return None
@@ -34,6 +36,7 @@ def get_brainrot_footage(game: str=None, config_path: str="utils/config.py") -> 
         result = VideoFileClip(footage_path).without_audio()
     except Exception as e:
         logging.warning(f"Error loading footage for game '{game}' from path: {footage_path}. Will download from source.")
+        invalid_path = f'{footage_path}'
         footage_path = None
     if not footage_path:
         logging.info(f"Footage path for footage '{footage}' not found. Downloading from source: {source}")
@@ -47,7 +50,7 @@ def get_brainrot_footage(game: str=None, config_path: str="utils/config.py") -> 
             config_data = file.read()
 
         # Update the footage path in the config data
-        config_data = config_data.replace(f'"{source}", None', f'"{source}", "{footage_path}"')
+        config_data = config_data.replace(f'"{source}", "{invalid_path}"', f'"{source}", "{footage_path}"')
 
         # Write the updated config back to the file
         with open(config_path, 'w') as file:

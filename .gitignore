@@ -8,4 +8,5 @@ token.json
 utils/footage*
 utils/models/*
 output/*
+secrets/*
 *.log

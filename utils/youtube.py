@@ -19,49 +19,55 @@ def get_credentials():
     """
     creds = None
     
-    # If a token file already exists, load it to skip re-auth
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    
-    # If credentials are invalid or don't exist, go through the OAuth flow
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            # Attempt to refresh the token if possible
-            creds.refresh(Request())
-        else:
-            # Start a new OAuth flow with your client secrets file
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'client_secret.json', SCOPES
-            )
-            creds = flow.run_local_server(port=8080)
+    try:
+        # If a token file already exists, load it to skip re-auth
+        if os.path.exists('token.json'):
+            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
         
-        # Save the credentials for next time
-        with open('token.json', 'w') as token_file:
-            token_file.write(creds.to_json())
-    return creds
+        # If credentials are invalid or don't exist, go through the OAuth flow
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                # Attempt to refresh the token if possible
+                creds.refresh(Request())
+            else:
+                # Start a new OAuth flow with your client secrets file
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'client_secret.json', SCOPES
+                )
+                creds = flow.run_local_server(port=8080)
+            
+            # Save the credentials for next time
+            with open('token.json', 'w') as token_file:
+                token_file.write(creds.to_json())
+    except Exception as e:
+        logging.error(f"An error occurred while getting credentials: {e}")
+        return None
 
+    return creds
 
 def get_youtube_service():
     """
     Create a YouTube Data API service object.
     """
     creds = get_credentials()
+    if not creds:
+        logging.error("Could not get credentials for YouTube API. Can't get youtube service.")
+        return None
     youtube = build("youtube", "v3", credentials=creds, cache_discovery=False)
     return youtube
 
-def upload_video_to_youtube(video_path, title, description, tags, youtube_service=None):
+def upload_video_to_youtube(video_path, title, description, tags, youtube_service):
     """
     Uploads a video to YouTube using the given youtube_service.
     """
     if youtube_service is None:
-        youtube_service = get_youtube_service()
+        return {'error': 'youtube_service_none'}
     
     body = {
         "snippet": {
             "title": title,
             "description": description,
             "tags": tags,
-            # 'categoryId': '22',  # optional, e.g. '22' = People & Blogs
         },
         "status": {
             "privacyStatus": "public", # or "private" or "unlisted"
@@ -118,6 +124,9 @@ def upload_scene(scene_path: str, idx: int, dir_name: str, youtube_service) -> b
         if response == {"error": "uploadLimitExceeded"}:
             logging.warning("Daily upload limit reached. Stopping uploads.")
             limit_reached = True
+            return False, limit_reached
+        if response == {'error': 'youtube_service_none'}:
+            logging.error("YouTube service object is None. Exiting upload.")
             return False, limit_reached
         logging.info(f"Scene {idx+1} uploaded to YouTube.")
         return True, limit_reached

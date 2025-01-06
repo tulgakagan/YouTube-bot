@@ -107,13 +107,13 @@ python main.py "https://www.youtube.com/watch?v=<YOUR_VIDEO_ID>"
    - Uploads the video to YouTube
    - **Deletes** the local video after a successful upload
 
-6. If the daily upload limit is reached, the script stops further uploads.
+6. If the daily upload limit via APIs is reached, the script stops further uploads.
 
 ### Upload-Only Mode:
 
 If you already have scene videos prepared and only need to upload them, you can use the **upload-only mode**. This skips all preprocessing steps and directly uploads the videos.
 
-Run:
+From the root directory, run:
 
 ```bash
 python main.py <scenes_directory> --upload-only
@@ -137,7 +137,7 @@ Edit `utils/config.py` to customize:
 - `Scene Detection Thresholds`: The default threshold is 0.8 in `utils/processors.py`. Adjust if you’re under-splitting scenes.
 - `Network Requirements`: Downloads and uploads require a stable internet connection.
 - `Time Complexity`: On non-GPU devices, rendering with `.write_videofile()` takes significant time, making the pipeline slow on CPU.
-- `Rate Limits`: YouTube allows a maximum of 6 video uploads per day via APIs.
+- `Rate Limits`: Projects that enable the YouTube Data API have a default quota allocation of 10,000 units per day. A video upload costs 1600 units, therefore a maximum of 6 video uploads per day via the Youtube Data v3 API is allowed. For more information regarding API quota limits: [Google Developers Page](https://developers.google.com/youtube/v3/getting-started)
 
 ## Contributing
 
