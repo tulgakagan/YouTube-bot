@@ -116,7 +116,7 @@ If you already have scene videos prepared and only need to upload them, you can 
 Run:
 
 ```bash
-python main.py "https://www.youtube.com/watch?v=<YOUR_VIDEO_ID>"
+python main.py <scenes_directory> --upload-only
 ```
 
 - <scenes_directory> is the path to the folder containing the preprocessed scene videos.
