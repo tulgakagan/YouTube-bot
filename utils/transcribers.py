@@ -9,8 +9,7 @@ import os
 import assemblyai as aai
 import ffmpeg
 import utils.config as config
-# Configure logging
-assemblyai_key = config.ASSEMBLYAI_API_KEY
+
 def youtube_url_to_id(video_url: str) -> str:
     """
     Extract the video ID from a YouTube URL.
@@ -167,7 +166,7 @@ def transcribe_audio_vosk(audio_path: str, model_name: str = None) -> list[dict]
     logging.info(f"Vosk transcription completed for {audio_path}")
     return segments
 
-def transcribe_audio_assemblyai(audio_path: str) -> list[dict]:
+def transcribe_audio_assemblyai(audio_path: str, assemblyai_key: str) -> list[dict]:
     """
     Transcribe audio using AssemblyAI API.
     """
@@ -193,9 +192,9 @@ def transcribe_audio_assemblyai(audio_path: str) -> list[dict]:
     except Exception as e:
         logging.error(f"AssemblyAI transcription failed: {e}")
         return []
-def get_transcript(downloaded_path: str, video_url: str = None, transcriber: str = "vosk", model: str = None) -> list[dict]:
+def get_transcript(downloaded_path: str, video_url: str = None, transcriber: str = "vosk", model: str = None, assemblyai_token: str = None) -> list[dict]:
     """
-    Get the transcript of a video using
+    Get the transcript of a video using one of the following methods:
     - Official YouTube transcript (if available)
     - Vosk (default)
     - Whisper
@@ -217,10 +216,6 @@ def get_transcript(downloaded_path: str, video_url: str = None, transcriber: str
     if transcript:
         logging.info("Using official YouTube transcript.")
     else:
-        if transcriber not in ["whisper", "vosk", "assemblyai"]:
-            logging.error("Invalid transcriber specified. Exiting.")
-            return
-        
         # Extracting Audio
         logging.info("Extracting audio from video...")
         audio_path = extract_audio(downloaded_path)
@@ -232,7 +227,7 @@ def get_transcript(downloaded_path: str, video_url: str = None, transcriber: str
 
         if transcriber == "assemblyai":
             logging.info("Transcribing audio with AssemblyAI...")
-            transcript = transcribe_audio_assemblyai(audio_path)
+            transcript = transcribe_audio_assemblyai(audio_path, assemblyai_token)
         elif transcriber == "vosk":
             transcript = transcribe_audio_vosk(audio_path, model_name=model)
             return transcript

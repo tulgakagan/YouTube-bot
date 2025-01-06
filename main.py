@@ -4,13 +4,12 @@ from utils.downloaders import download_video_if_needed
 from utils.processors import detect_scenes
 from utils.render import prepare_shorts
 from utils.transcribers import get_transcript
-from utils.youtube import get_youtube_service, upload_video_to_youtube, upload_scene
-from utils.log_utils import log_uploaded_video, log_failed_upload, get_uploaded_videos, get_failed_videos
+from utils.youtube import get_youtube_service, upload_scene
+from utils.log_utils import log_uploaded_video, log_failed_upload, get_uploaded_videos
 import utils.config as config
 from moviepy import VideoFileClip
 import sys
 from time import sleep
-import random
 
 # Configure logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -27,6 +26,8 @@ def main(input: str) -> bool:
 
     # Initialize services and configuration
     transcriber = config.TRANSCRIBER
+    assemblyai_token = config.ASSEMBLYAI_API_KEY if transcriber == "assemblyai" else None
+    
     model = config.PREFERRED_MODELS.get(transcriber, None)
     youtube_service = get_youtube_service() # Initialize YouTube API service, comment this line if you are not uploading to YouTube
 
@@ -37,7 +38,7 @@ def main(input: str) -> bool:
         return False
 
     # Get transcript
-    transcript = get_transcript(downloaded_path=downloaded_path, video_url = input, transcriber=transcriber, model=model)
+    transcript = get_transcript(downloaded_path=downloaded_path, video_url = input, transcriber=transcriber, model=model, assemblyai_token=assemblyai_token)
     if not transcript:
         logging.error("Could not get transcript. Exiting.")
         return False

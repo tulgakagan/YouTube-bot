@@ -5,7 +5,6 @@ requirements.in
 *.mp3
 *.mp4
 token.json
-client_secret.json
 utils/footage*
 utils/models/*
 output/*

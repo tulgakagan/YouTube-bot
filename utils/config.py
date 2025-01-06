@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
 load_dotenv()
+
 # Modify this config file before running the main.py file.
 
 TRANSCRIBER = "vosk"  # whisper, vosk, assemblyai
@@ -43,7 +44,7 @@ def check_config():
     if TRANSCRIBER not in ["whisper", "vosk", "assemblyai"]:
         raise ValueError("TRANSCRIBER must be one of 'whisper', 'vosk', or 'assemblyai'")
     if TRANSCRIBER == "assemblyai" and not ASSEMBLYAI_API_KEY:
-        raise ValueError("ASSEMBLYAI_API_KEY must be set in the environment variables")
+        raise ValueError("ASSEMBLYAI_API_KEY must be set in the environment variables if using AssemblyAI")
     if TRANSCRIBER == "vosk" and (not VOSK_DIRECTORY or not os.path.exists(VOSK_DIRECTORY)):
         raise ValueError("VOSK_DIRECTORY must be set in utils/config.py")
     if TRANSCRIBER == "assemblyai" and not ASSEMBLYAI_API_KEY:
