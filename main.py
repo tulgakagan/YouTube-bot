@@ -79,7 +79,8 @@ def main(input: str) -> bool:
             logging.info(f"Scene {idx+1} deleted. Path: {scene}")
         except Exception as e:
             logging.error(f"Error deleting scene {idx+1}: {e}")
-        sleep(10) # Delay before the next upload.
+        if idx < len(final_videos) - 1:
+            sleep(10) # Delay before the next upload.
     return True
 
 def main_upload_only(scenes_directory: str):
@@ -93,10 +94,11 @@ def main_upload_only(scenes_directory: str):
         logging.error("Scenes directory does not exist. Exiting.")
         return False
     youtube_service = get_youtube_service() # Initialize YouTube API service
-    uploaded_videos = get_uploaded_videos()
+    uploaded_videos = get_uploaded_videos() # Get list of already uploaded videos
     target = os.path.dirname(scenes_directory)
-
-    for idx, scene in enumerate(os.listdir(scenes_directory)):
+    video_list = sorted(os.listdir(scenes_directory))
+    video_list = [video for video in video_list if video.endswith(".mp4")] #Include only .mp4 files
+    for idx, scene in enumerate(video_list):
         if scene == ".DS_Store":  # Skip .DS_Store
             continue
 
@@ -114,7 +116,7 @@ def main_upload_only(scenes_directory: str):
                 break
             else:
                 continue
-        log_uploaded_video(scene_path)
+        log_uploaded_video(scene_path) # Log the uploaded video
 
         #Delete local file after successful upload
         try:
@@ -122,7 +124,8 @@ def main_upload_only(scenes_directory: str):
             logging.info(f"Scene {idx+1} deleted. Path: {scene}")
         except Exception as e:
             logging.error(f"Error deleting scene {idx+1}: {e}")
-        # Delay before the next upload, to avoid rate limiting by YouTube (bot detection)
+        if idx < len(video_list) - 1:
+            sleep(10) # Delay before the next upload.
     return True
 
 if __name__ == "__main__":
