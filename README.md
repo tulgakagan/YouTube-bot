@@ -95,7 +95,7 @@ python main.py "https://www.youtube.com/watch?v=<YOUR_VIDEO_ID>"
 
 3. It **detects** scene changes using FFmpeg.
 
-4. For each scene that is between 20 and 60 seconds:
+4. For each scene that is between 20 and 180 seconds:
 
    - Subclips the main video
    - Renders it in 9:16 format with brainrot footage

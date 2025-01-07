@@ -133,7 +133,7 @@ def main_upload_only(scenes_directory: str):
             if delete_after_upload:
                 try:
                     os.remove(scene)
-                    logging.info(f"Scene {idx+1} deleted. Path: {scene}")
+                    logging.info(f"Scene {idx+1} deleted. Path: {scene_path}")
                 except Exception as e:
                     logging.error(f"Error deleting scene {idx+1}: {e}")
             continue
@@ -149,8 +149,8 @@ def main_upload_only(scenes_directory: str):
         #Delete local file after successful upload
         if delete_after_upload:
             try:
-                os.remove(scene)
-                logging.info(f"Scene {idx+1} deleted. Path: {scene}")
+                os.remove(scene_path)
+                logging.info(f"Scene {idx+1} deleted. Path: {scene_path}")
             except Exception as e:
                 logging.error(f"Error deleting scene {idx+1}: {e}")
         if idx < len(video_list) - 1:

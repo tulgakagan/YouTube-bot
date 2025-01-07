@@ -219,7 +219,7 @@ def prepare_shorts(clip: VideoFileClip, timestamps: list=None,
             if end-start < 20:
                 logging.info(f"Scene {i+1} is too short. Skipping...")
                 continue
-            if end-start > 60:
+            if end-start > 180:
                 logging.error(f"Scene {i+1} is too long. Skipping...")
                 continue
             logging.info(f"Rendering scene {i+1} of {scene_count} from {start} to {end}...")
