@@ -66,7 +66,7 @@ def main(input: str) -> bool:
         return True
 
     # Main loop to upload videos
-
+    scenes_directory = os.path.join(target, "scenes")
     for idx, scene in enumerate(final_videos):
         if scene in uploaded_videos:
             logging.info(f"Video {scene} already uploaded. Skipping...")
@@ -96,6 +96,9 @@ def main(input: str) -> bool:
         if idx < len(final_videos) - 1:
             sleep(10) # Delay before the next upload.
 
+        #If scenes directory is empty, delete the original video directory, job is done.
+        if not os.listdir(scenes_directory):
+            os.rmdir(target)
     return True
 
 def main_upload_only(scenes_directory: str):
@@ -144,7 +147,7 @@ def main_upload_only(scenes_directory: str):
                 break
             else:
                 continue
-        #log_uploaded_video(scene_path) # Log the uploaded video
+        log_uploaded_video(scene_path) # Log the uploaded video
 
         #Delete local file after successful upload
         if delete_after_upload:

@@ -5,7 +5,6 @@ import utils.config as config
 from utils.downloaders import download_video_if_needed
 from time import sleep
 import os
-import re
 
 def get_brainrot_footage(game: str=None, config_path: str="utils/config.py") -> VideoFileClip:
     """
@@ -183,8 +182,8 @@ def subtitle_subclip(subclip: VideoFileClip, transcript: list[dict], start: floa
                 stroke_color="black",
                 stroke_width=2
             )
-            .with_start(entry["start"]) \
-            .with_end(entry["end"]) \
+            .with_start(entry["start"])
+            .with_end(entry["end"])
             .with_position(("center", 780)))  # or ("center","bottom")
             subtitle_clips.append(txt_clip)
     logging.debug(f"Subtitles for scene {i+1} created: {len(subtitle_clips)}")

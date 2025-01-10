@@ -134,9 +134,9 @@ def split_long_scenes(timestamps: list[float]) -> list[float]:
         end = timestamps[i]
 
         # Check if the scene duration exceeds 60 seconds
-        while end - start > 180:
+        while end - start > 60:
             # Add a new timestamp 60 seconds after the start
-            start += 180
+            start += 60
             new_timestamps.append(start)
 
         new_timestamps.append(end)

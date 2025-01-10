@@ -13,7 +13,7 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 ## Features
 
 - **Multiple Transcribers**: Choose from `whisper`, `vosk`, or `assemblyai` in `utils/config.py`.
-- **Automated Scene Splitting**: Scenes under 20 seconds are merged; scenes over 180 seconds are split, to adhere to YouTube Shorts format standards.
+- **Automated Scene Splitting**: Scenes under 20 seconds are merged; scenes over 60 seconds are split, to adhere to YouTube Shorts format standards.
 - **Brainrot Footage**: The final 9:16 video has the main subclip on top and a random video game clip (Temple Run, Subway Surfers, Geometry Dash, etc...) beneath. You can customize the videos used as brainrot footage in `utils/config.py`.
 - **Subtitle Overlays**: Subtitles are positioned near the bottom of the main video, just above the "brainrot footage".
 - **YouTube Data API**: Automatically uploads each generated scene to YouTube.
@@ -75,7 +75,7 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 
 ## Usage
 
-You’ll be prompted for Google OAuth the first time you run it. Once complete, the clip(s) appear in your YouTube channel.
+You’ll be prompted for Google OAuth the first time you run it. Once complete, the clip(s) appear in your YouTube channel. You should update the `utils/config.py` file with your preferences(e.g. your chosen transcriber or path to your directory where your Vosk model is installed) before running the main file.
 
 ### Main Workflow:
 
@@ -83,6 +83,12 @@ From the root directory, run:
 
 ```bash
 python main.py "https://www.youtube.com/watch?v=<YOUR_VIDEO_ID>"
+```
+
+or
+
+```bash
+python main.py <path/to/your/video.mp4>
 ```
 
 **Flow**:
@@ -95,14 +101,14 @@ python main.py "https://www.youtube.com/watch?v=<YOUR_VIDEO_ID>"
 
 3. It **detects** scene changes using FFmpeg.
 
-4. For each scene that is between 20 and 180 seconds:
+4. For each scene that is between 20 and 60 seconds:
 
    - Subclips the main video
    - Renders it in 9:16 format with brainrot footage
    - Subtitles are added
-   - Saves it locally in `output/scenes/`
+   - Saves it locally in `output/<Title>/scenes/`
 
-5. For each scene in `output/scenes/`:
+5. For each scene in `output/<Title>/scenes/`:
 
    - Uploads the video to YouTube
    - **Deletes** the local video after a successful upload
@@ -116,7 +122,7 @@ If you already have scene videos prepared and only need to upload them, you can 
 From the root directory, run:
 
 ```bash
-python main.py <scenes_directory> --upload-only
+python main.py <path/to/scenes> --upload-only
 ```
 
 - <scenes_directory> is the path to the folder containing the preprocessed scene videos.
@@ -128,7 +134,7 @@ python main.py <scenes_directory> --upload-only
 Edit `utils/config.py` to customize:
 
 - `TRANSCRIBER`: Set to `whisper`, `vosk`, or `assemblyai`.
-- `PREFERRED_MODELS`: A dictionary mapping transcribers to model names. (Optional)
+- `PREFERRED_MODELS`: A dictionary mapping transcribers to model names. (Optional, if you have multiple speech-to-text models to choose from)
 - `brainrot_footage`: Mapping of different background clips (Temple Run, Subway Surfers, etc.). If a local path is missing, the script tries to download it.
 
 ## Known Limitations

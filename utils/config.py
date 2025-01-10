@@ -4,7 +4,7 @@ load_dotenv()
 
 # Modify this config file before running the main.py file.
 
-TRANSCRIBER = "vosk"  # whisper, vosk, assemblyai
+TRANSCRIBER = "assemblyai"  # whisper, vosk, assemblyai
 
 PREFERRED_MODELS = {
     "whisper": "large-v3-turbo",
@@ -16,7 +16,7 @@ MODELS = {
     "vosk": ["vosk-model-small-en-us-0.15", "vosk-model-en-us-0.42-gigaspeech", "vosk-model-en-us-0.22-lgraph"],
     "assemblyai": [None]
 }
-VOSK_DIRECTORY = "/Users/tulgakagan/Desktop/AI_Lecture_Notes/Software_Engineering/YouTube-bot/utils/models"
+VOSK_DIRECTORY = "/path/to/vosk-models"  # Path to the directory where Vosk models are stored
 ASSEMBLYAI_API_KEY = os.getenv("ASSEMBLYAI_API_KEY")
 
 LOG_DIR = os.path.join(os.getcwd(), "logs")  # Create a "logs" directory in the current working directory
@@ -27,7 +27,7 @@ FAILED_UPLOAD_LOG_FILE = os.path.join(LOG_DIR, "failed_uploads.log")
 
 DELETE_AFTER_UPLOAD = True  # Set to False if you want to keep the scene files after uploading
 
-# Add your own brainrot footage links here, you can leave the "placeholder" as is, it will be replaced with the actual video link
+# Add your own brainrot footage links here, you can leave the "placeholder" as is, it will be replaced with the actual video path after it's downloaded.
 # The keys are the game names and the values are dictionaries with video names as keys and a list of video link and placeholder or video paths as values
 
 brainrot_footage = {
@@ -43,6 +43,9 @@ brainrot_footage = {
         "vid1": ["https://www.youtube.com/watch?v=xu1wRfUHtKg", "placeholder"], # WHAT by Spu7nix
         "vid2": ["https://www.youtube.com/watch?v=PnKGb6MR9No", "placeholder"], # Random level by KrMaL
         "vid3": ["https://www.youtube.com/watch?v=gok5ShDXxg4", "placeholder"] # Clubstep
+    },
+    "gta_v": {
+        "vid1": ["https://www.youtube.com/watch?v=ZtLrNBdXT7M", "placeholder"], # Car stunt video
     }
 }
 
@@ -53,8 +56,6 @@ def check_config():
         raise ValueError("ASSEMBLYAI_API_KEY must be set in the environment variables if using AssemblyAI")
     if TRANSCRIBER == "vosk" and (not VOSK_DIRECTORY or not os.path.exists(VOSK_DIRECTORY)):
         raise ValueError("VOSK_DIRECTORY must be set in utils/config.py")
-    if TRANSCRIBER == "assemblyai" and not ASSEMBLYAI_API_KEY:
-        raise ValueError("ASSEMBLYAI_API_KEY must be set in the environment variables")
     if not brainrot_footage:
         raise ValueError("brainrot_footage must be set in utils/config.py")
     if not isinstance(brainrot_footage, dict):
