@@ -10,6 +10,7 @@ import utils.config as config
 from moviepy import VideoFileClip
 import sys
 from time import sleep
+import shutil
 
 # Configure logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -59,7 +60,10 @@ def main(input: str) -> bool:
 
     # Get list of already uploaded videos
     uploaded_videos = get_uploaded_videos()
-
+    if final_videos == []:
+        logging.error("No scene videos found. Exiting.")
+        return False
+    
     # Youtube service check
     if not youtube_service:
         logging.error("YouTube service object is None. Exiting upload.")
@@ -98,7 +102,7 @@ def main(input: str) -> bool:
 
         #If scenes directory is empty, delete the original video directory, job is done.
         if not os.listdir(scenes_directory):
-            os.rmdir(target)
+            shutil.rmtree(target)
     return True
 
 def main_upload_only(scenes_directory: str):
@@ -125,7 +129,9 @@ def main_upload_only(scenes_directory: str):
     target = os.path.dirname(scenes_directory)
     video_list = sorted(os.listdir(scenes_directory))
     video_list = [video for video in video_list if video.endswith(".mp4")] #Include only .mp4 files
-
+    if video_list == []:
+        logging.error("No scene videos found in the directory. Exiting.")
+        return False
     # Main loop to upload videos
     for idx, scene in enumerate(video_list):
         if scene == ".DS_Store":  # Skip .DS_Store
@@ -158,6 +164,10 @@ def main_upload_only(scenes_directory: str):
                 logging.error(f"Error deleting scene {idx+1}: {e}")
         if idx < len(video_list) - 1:
             sleep(10) # Delay before the next upload.
+        
+        #If scenes directory is empty, delete the original video directory, job is done.
+        if not os.listdir(scenes_directory):
+            shutil.rmtree(target)
     return True
 
 if __name__ == "__main__":
