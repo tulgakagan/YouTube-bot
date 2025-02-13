@@ -41,6 +41,7 @@ A Python pipeline developed as part of a **Software Engineering** project at **B
 
    ```bash
    pip install -r requirements.txt
+   pip install --upgrade yt-dlp  # Ensure you have the latest version of yt-dlp
    ```
 
    Make sure you have **FFmpeg** installed on your system. For example:

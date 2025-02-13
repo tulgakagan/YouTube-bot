@@ -176,7 +176,7 @@ websockets==14.1
     #   vosk
 youtube-transcript-api==0.6.3
     # via -r requirements.in
-yt-dlp==2024.12.23
+yt-dlp
     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
