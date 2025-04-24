@@ -4,13 +4,11 @@ from utils.downloaders import download_video_if_needed
 from utils.processors import detect_scenes
 from utils.render import prepare_shorts
 from utils.transcribers import get_transcript
-from utils.youtube import get_youtube_service, upload_scene
-from utils.log_utils import log_uploaded_video, log_failed_upload, get_uploaded_videos
+from utils.youtube import get_youtube_service
+from utils.uploader import upload_videos
 import utils.config as config
 from moviepy import VideoFileClip
 import sys
-from time import sleep
-import shutil
 
 # Configure logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -34,7 +32,9 @@ def main(input: str) -> bool:
     # You need to have the client_secret.json file in the same directory as this script.
     # If you don't, you can download it from the Google Cloud Console. An invalid client_secret.json will cause an error.
     youtube_service = get_youtube_service()
-
+    if not youtube_service:
+        logging.error("YouTube service object is None. Exiting upload.")
+        return False
     # Download Video
     downloaded_path = download_video_if_needed(input)
     if not downloaded_path:
@@ -55,57 +55,21 @@ def main(input: str) -> bool:
 
     # Convert to multiple scene shorts with vertical 9x16 with brainrot footage and subtitles
     target = os.path.dirname(downloaded_path)
-    clip = VideoFileClip(downloaded_path)
-    final_videos = prepare_shorts(clip = clip, timestamps=scene_timestamps, transcript=transcript, base_output_path=target)
+    with VideoFileClip(downloaded_path) as clip:
+        final_videos = prepare_shorts(clip = clip, timestamps=scene_timestamps, transcript=transcript, base_output_path=target)
 
-    # Get list of already uploaded videos
-    uploaded_videos = get_uploaded_videos()
-    if final_videos == []:
-        logging.error("No scene videos found. Exiting.")
+    # Upload videos
+    success = upload_videos(videos=final_videos,
+                            target=target,
+                            youtube_service=youtube_service,
+                            delete_after_upload=delete_after_upload)
+    if not success:
+        logging.error("Upload process failed. Exiting.")
         return False
-    
-    # Youtube service check
-    if not youtube_service:
-        logging.error("YouTube service object is None. Exiting upload.")
-        return True
-
-    # Main loop to upload videos
-    scenes_directory = os.path.join(target, "scenes")
-    for idx, scene in enumerate(final_videos):
-        if scene in uploaded_videos:
-            logging.info(f"Video {scene} already uploaded. Skipping...")
-            if delete_after_upload:
-                try:
-                    os.remove(scene)
-                    logging.info(f"Scene {idx+1} deleted. Path: {scene}")
-                except Exception as e:
-                    logging.error(f"Error deleting scene {idx+1}: {e}")
-            continue
-        success, limit = upload_scene(scene_path=scene, idx=idx, dir_name=target, youtube_service=youtube_service)
-        if not success:
-            log_failed_upload(scene)
-            if limit:
-                break
-            else:
-                continue
-        log_uploaded_video(scene)
-
-        #Delete local file after successful upload
-        if delete_after_upload:
-            try:
-                os.remove(scene)
-                logging.info(f"Scene {idx+1} deleted. Path: {scene}")
-            except Exception as e:
-                logging.error(f"Error deleting scene {idx+1}: {e}")
-        if idx < len(final_videos) - 1:
-            sleep(10) # Delay before the next upload.
-
-        #If scenes directory is empty, delete the original video directory, job is done.
-        if not os.listdir(scenes_directory):
-            shutil.rmtree(target)
+    logging.info("Upload process completed successfully.")
     return True
 
-def main_upload_only(scenes_directory: str):
+def main_upload_only(scenes_directory: str) -> bool:
     """
     Uploads all the scene videos in the given directory to YouTube.
     Only when you have scenes that haven't been uploaded, and you want to upload them without processing everything again.
@@ -123,51 +87,21 @@ def main_upload_only(scenes_directory: str):
         logging.error("YouTube service object is None. Exiting upload.")
         return False
     
-    uploaded_videos = get_uploaded_videos()
     delete_after_upload = config.DELETE_AFTER_UPLOAD
 
     target = os.path.dirname(scenes_directory)
     video_list = sorted(os.listdir(scenes_directory))
-    video_list = [video for video in video_list if video.endswith(".mp4")] #Include only .mp4 files
-    if video_list == []:
-        logging.error("No scene videos found in the directory. Exiting.")
-        return False
+    video_list = [os.path.join(scenes_directory, video) for video in video_list if video.endswith(".mp4")] #Include only .mp4 files
+
     # Main loop to upload videos
-    for idx, scene in enumerate(video_list):
-        if scene == ".DS_Store":  # Skip .DS_Store
-            continue
-
-        scene_path = os.path.join(scenes_directory, scene)
-        if scene_path in uploaded_videos:
-            if delete_after_upload:
-                try:
-                    os.remove(scene)
-                    logging.info(f"Scene {idx+1} deleted. Path: {scene_path}")
-                except Exception as e:
-                    logging.error(f"Error deleting scene {idx+1}: {e}")
-            continue
-        success, limit = upload_scene(scene_path=scene_path, idx=idx, dir_name=target, youtube_service=youtube_service)
-        if not success:
-            log_failed_upload(scene_path)
-            if limit:
-                break
-            else:
-                continue
-        log_uploaded_video(scene_path) # Log the uploaded video
-
-        #Delete local file after successful upload
-        if delete_after_upload:
-            try:
-                os.remove(scene_path)
-                logging.info(f"Scene {idx+1} deleted. Path: {scene_path}")
-            except Exception as e:
-                logging.error(f"Error deleting scene {idx+1}: {e}")
-        if idx < len(video_list) - 1:
-            sleep(10) # Delay before the next upload.
-        
-        #If scenes directory is empty, delete the original video directory, job is done.
-        if not os.listdir(scenes_directory):
-            shutil.rmtree(target)
+    success = upload_videos(videos=video_list,
+                            target=target,
+                            youtube_service=youtube_service,
+                            delete_after_upload=delete_after_upload)
+    if not success:
+        logging.error("Upload process failed. Exiting.")
+        return False
+    logging.info("Upload process completed successfully.")
     return True
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ load_dotenv()
 
 # Modify this config file before running the main.py file.
 
+SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+
 TRANSCRIBER = "assemblyai"  # whisper, vosk, assemblyai
 
 PREFERRED_MODELS = {

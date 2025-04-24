@@ -6,10 +6,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 import os
 import logging
-from utils.config import UPLOAD_LOG_FILE, FAILED_UPLOAD_LOG_FILE
-
-# The YouTube Data API scope for uploading videos
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+from utils.config import SCOPES
 
 def get_credentials():
     """
